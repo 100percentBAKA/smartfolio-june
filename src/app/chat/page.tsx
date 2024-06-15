@@ -1,27 +1,74 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect, useRef } from "react";
 import { IoSend } from "react-icons/io5";
 import ReactMarkdown from "react-markdown";
 import { RiRobot2Line } from "react-icons/ri";
-import { useChat } from "@ai-sdk/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { usePostQuery } from "@/lib/mutations";
 
 function Chat() {
-  const { messages, input, setInput, handleInputChange, handleSubmit } =
-    useChat();
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>(
+    []
+  );
+  const [loading, setLoading] = useState(false);
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
+
+  const { mutate: postQuery, isPending } = usePostQuery();
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (input.trim() === "") return;
+
+    setLoading(true);
+
+    const userMessage = { role: "user", content: input };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    const reqBody = {
+      query: input,
+    };
+
+    postQuery(reqBody, {
+      onSuccess: (response) => {
+        const botMessage = {
+          role: "bot",
+          content: response.data.answer,
+        };
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+        setLoading(false);
+      },
+      onError: (error) => {
+        const botMessage = {
+          role: "bot",
+          content: "An error occurred. Please try again.",
+        };
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+        setLoading(false);
+      },
+    });
+
+    setInput("");
+  };
 
   const handleSuggestionClick = (text: string) => {
     setInput(text);
   };
 
   const suggestions = [
-    "When is Adarsh's birthday? 🎉",
-    "How do I contact you 👋",
+    "Introduce yourself as a poem? 🎉",
+    "How comfortable are you with NextJS and Spring Boot 👋",
     "Do you have any work experience ⚒️",
-    "What is your github account 👁️",
+    "What are your hobbies and share your github account 👁️",
   ];
 
   useEffect(() => {
@@ -46,6 +93,7 @@ function Chat() {
           Chat with my portfolio!
         </p>
       </div>
+
       <div className="rounded-md border border-gray-200 w-full h-full mt-8 flex flex-col">
         {/* Suggestion Windows */}
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center p-3 gap-3 border-b border-gray-200">
@@ -59,9 +107,10 @@ function Chat() {
             </div>
           ))}
         </div>
+
         {/* Chat Window */}
         <div
-          className="flex-1 p-4 overflow-y-auto flex flex-col min-h-[300px] max-h-[500px]"
+          className="flex-1 p-4 overflow-y-auto flex flex-col min-h-[550px] max-h-[600px]"
           ref={chatContainerRef}
         >
           {messages.map((message, index) => (
@@ -77,9 +126,13 @@ function Chat() {
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           ))}
+          {loading && (
+            <Skeleton className="my-2 max-w-[250px] p-2 rounded-md min-h-[40px]" />
+          )}
+
           {/* Fall back for empty chat window */}
-          <div className="flex-1 min-h-[60vh] w-full flex items-center justify-center">
-            {messages.length === 0 && (
+          <div className="flex-1 w-full flex items-center justify-center">
+            {messages.length === 0 && !loading && (
               <div className="flex flex-col space-y-4 items-center">
                 <RiRobot2Line className="w-[24px] h-[24px]" />
                 <p>Send a message to start chatting with my portfolio</p>
@@ -88,6 +141,7 @@ function Chat() {
             )}
           </div>
         </div>
+
         {/* Input Field goes here . . . */}
         <div className="p-4 border-t border-gray-200">
           <form className="flex items-center space-x-2" onSubmit={handleSubmit}>
@@ -98,7 +152,11 @@ function Chat() {
               className="flex-1 border border-gray-300 p-2 rounded-md"
               placeholder="Type a message..."
             />
-            <Button className="rounded-md flex items-center" type="submit">
+            <Button
+              className="rounded-md flex items-center"
+              type="submit"
+              disabled={isPending}
+            >
               <span className="hidden lg:flex">Send</span>
               <IoSend className="lg:hidden" />
             </Button>

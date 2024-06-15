@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import React from "react";
-import {Navbar} from "@/components/navbar";
-import {Footer} from "@/components/footer";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { ReactQueryClientProvider } from "./(providers)/tanstack-query-client-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,22 +19,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-      <header>
-        <nav>
-          <Navbar />
-        </nav>
-      </header>
+    <ReactQueryClientProvider>
+      <html lang="en">
+        <body className={inter.className}>
+          <header>
+            <nav>
+              <Navbar />
+            </nav>
+          </header>
 
-      <main>
-        {children}
-      </main>
+          <main>{children}</main>
 
-      <footer>
-        <Footer />
-      </footer>
-      </body>
-    </html>
+          <footer>
+            <Footer />
+          </footer>
+        </body>
+      </html>
+    </ReactQueryClientProvider>
   );
 }
