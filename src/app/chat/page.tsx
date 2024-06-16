@@ -8,13 +8,19 @@ import ReactMarkdown from "react-markdown";
 import { RiRobot2Line } from "react-icons/ri";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePostQuery } from "@/lib/mutations";
+import {useToast} from "@/components/ui/use-toast";
+import {ToastAction} from "@/components/ui/toast";
 
 function Chat() {
+
+  const {toast} = useToast()
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: string; content: string }[]>(
     []
   );
   const [loading, setLoading] = useState(false);
+  const [toastDisplayed, setToastDisplayed] = useState(false);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -25,8 +31,25 @@ function Chat() {
     setInput(event.target.value);
   };
 
+  const handleToast = () => {
+    console.log("handling toast")
+    !toastDisplayed && toast({
+      title: "Wait for 50 seconds",
+      description: "The backend of this project is deployed on Render, the free tier of Render puts the application to sleep due to the inactivity, please wait for 50 or more seconds to get the response",
+      action: (
+          <ToastAction altText="close">Close</ToastAction>
+      ),
+    })
+
+    //   after the toast is displayed, set the toastDisplayed state to true
+    setToastDisplayed(true)
+    console.log("toast handling done")
+  }
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    handleToast()
+
     if (input.trim() === "") return;
 
     setLoading(true);

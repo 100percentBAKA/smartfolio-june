@@ -5,6 +5,7 @@ import React from "react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ReactQueryClientProvider } from "./(providers)/tanstack-query-client-provider";
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           </header>
 
           <main>{children}</main>
+          <Toaster />
 
           <footer>
             <Footer />
