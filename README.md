@@ -1,4 +1,4 @@
-# Portfolio is not Smartfolio 😎😎
+# Portfolio is now Smartfolio 😎😎
 
 ### Introduction
 
